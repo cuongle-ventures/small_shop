@@ -3,9 +3,11 @@ class CustomersController < ApplicationController
   before_action :authenticate_request
 
   def index
-    @customers = Customer.all
+    @customers = Customer.paginate(query_params)
 
-    render json: { customers: @customers, requested_customer: Current.customer }, status: 200
+    render json: { customers: @customers }, status: :ok
+  rescue ::PaginateError => e
+    render json: { errors: [e.message] }
   end
 
   def show
@@ -68,5 +70,9 @@ class CustomersController < ApplicationController
 
   def update_params
     params.require(:customer).permit(:first_name, :last_name, :email)
+  end
+
+  def query_params
+    params.permit(:page, :per_page, :sort_column, :direction, :query)
   end
 end

@@ -2,9 +2,11 @@ class ProductsController < ApplicationController
   skip_before_action :verify_authenticity_token, only: [:create, :update, :destroy]
 
   def index
-    @products = Product.all
+    @products = Product.paginate(query_params)
 
     render json: { products: @products }, status: :ok
+  rescue ::PaginateError => e
+    render json: { errors: [e.message] }
   end
 
   def show
@@ -57,5 +59,9 @@ class ProductsController < ApplicationController
 
   def product_params
     params.require(:product).permit(:name, :price, :active)
+  end
+
+  def query_params
+    params.permit(:page, :per_page, :sort_column, :direction, :query)
   end
 end

@@ -1,5 +1,8 @@
 class PlaceOrderError < StandardError
-  def initialize(message)
-    super(message)
+  attr_reader :messages
+
+  def initialize(messages)
+    super()
+    @messages = messages
   end
 end

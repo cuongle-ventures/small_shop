@@ -1,6 +1,6 @@
 class OrdersController < ApplicationController
   skip_before_action :verify_authenticity_token, only: [:place_order]
-  before_action :authenticate_request, only: [:place_order]
+  before_action :authenticate_request
 
   include Params
 
@@ -38,10 +38,11 @@ class OrdersController < ApplicationController
   end
 
   def place_order
-    @order_service = OrderService.new(Current.customer["email"], params[:products])
+    @customer = Customer.find_by(email: Current.customer["email"])
+    @order_service = OrderService.new(@customer, params[:products])
     @order = @order_service.place_order
     render json: { data: @order }
   rescue ::PlaceOrderError => e
-    render json: { errors: [e.message] }
+    render json: { errors: e.messages }
   end
 end

@@ -1,15 +1,15 @@
 class OrderService
-  def initialize(customer_email, products)
-    @customer_email = customer_email
+  def initialize(customer, products)
+    @customer = customer
     @products = products
   end
 
   def place_order
-    @customer = Customer.find_by(email: @customer_email)
     unless @customer.present?
       raise PlaceOrderError.new("customer not found")
     end
 
+    @errors = []
     @set = Set[]
     
     @products.each do |product|
@@ -30,6 +30,18 @@ class OrderService
       @product_query = Product.where(id: @set.to_a)
 
       @product_query_hash = @product_query.to_h { |product| [product.id, product] }
+
+      @products.each do |product| 
+        product_details = @product_query_hash[product["product_id"]]
+
+        unless product_details.present?
+          @errors << "product id #{product["product_id"]} is not found"
+        end
+      end
+
+      if @errors.count > 0
+        raise PlaceOrderError.new(@errors)
+      end
 
       @order_items = []
 

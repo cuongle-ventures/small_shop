@@ -22,7 +22,7 @@ module Paginate
       total = scope.count
       total_page = (total.to_f / per_page).ceil
 
-      if page > total_page
+      if page > total_page && page > 1
         raise PaginateError.new("out of bounary")
       end
 

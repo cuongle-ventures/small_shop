@@ -11,6 +11,13 @@ Rails.application.routes.draw do
   patch "/customers/:id", to: "customers#update"
   delete "/customers/:id", to: "customers#destroy"
 
+
+  get "/products", to: "products#index"
+  get "/products/:id", to: "products#show"
+  post "/products", to: "products#create"
+  patch "/products/:id", to: "products#update"
+  delete "/products/:id", to: "products#destroy"
+
   post "/login", to: "sessions#login"
   post "/logout", to: "sessions#logout"
 

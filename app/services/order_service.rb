@@ -1,18 +1,33 @@
 class OrderService
-  def initialize(customer, products)
+  attr_reader :customer
+
+  def initialize(customer)
     @customer = customer
-    @products = products
   end
 
-  def place_order
+  def listing(params)
+    orders = Order.paginate(params)
+    orders
+  end
+
+  def show(id)
+    order = Order.find_by(id: id)
+    order
+  end
+
+  def place_order(products)
     unless @customer.present?
       raise PlaceOrderError.new("customer not found")
+    end
+
+    if products.count == 0
+      raise PlaceOrderError.new("product is an empty array")
     end
 
     @errors = []
     @set = Set[]
     
-    @products.each do |product|
+    products.each do |product|
       @set.add(product["product_id"])
     end
 
@@ -31,7 +46,7 @@ class OrderService
 
       @product_query_hash = @product_query.to_h { |product| [product.id, product] }
 
-      @products.each do |product| 
+      products.each do |product| 
         product_details = @product_query_hash[product["product_id"]]
 
         unless product_details.present?
@@ -45,7 +60,7 @@ class OrderService
 
       @order_items = []
 
-      @products.each do |product|
+      products.each do |product|
         product_details = @product_query_hash[product["product_id"]]
         Rails.logger.info "logger #{product_details.inspect}"  
 

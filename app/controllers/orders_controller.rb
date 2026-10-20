@@ -5,13 +5,18 @@ class OrdersController < ApplicationController
   include Params
 
   def index
-    @orders = Order.paginate(paginate_params)
+    @customer = Customer.find_by(email: Current.customer["email"])
+    @order_service = customer_service
 
-    render json: { orders: @orders }
+    render json: { orders: @order_service.listing(paginate_params) }
+  rescue ::PaginateError => e
+    render json: { errors: [e.message] }
   end
 
   def show
-    @order = Order.find_by(id: params[:id])
+    @order_service = customer_service
+
+    @order = @order_service.show(params[:id])
 
     unless @order.present?
       return render json: { errors: ['order not found'] }
@@ -39,10 +44,17 @@ class OrdersController < ApplicationController
 
   def place_order
     @customer = Customer.find_by(email: Current.customer["email"])
-    @order_service = OrderService.new(@customer, params[:products])
-    @order = @order_service.place_order
+    @order_service = customer_service
+    @order = @order_service.place_order(params[:products])
     render json: { data: @order }
   rescue ::PlaceOrderError => e
     render json: { errors: e.messages }
+  end
+
+  private
+
+  def customer_service
+    customer = Customer.find_by(email: Current.customer["email"])
+    OrderService.new(customer)
   end
 end

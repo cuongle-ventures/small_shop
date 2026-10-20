@@ -20,6 +20,7 @@ Rails.application.routes.draw do
 
   get "/orders", to: "orders#index"
   get "/orders/:id", to: "orders#show"
+  delete "/orders/:id", to: "orders#destroy"
   post "/orders/place_order", to: "orders#place_order"
 
   post "/login", to: "sessions#login"

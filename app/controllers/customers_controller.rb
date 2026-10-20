@@ -75,4 +75,10 @@ class CustomersController < ApplicationController
   def query_params
     params.permit(:page, :per_page, :sort_column, :direction, :query)
   end
+
+  private
+
+  def customer_service
+    
+  end
 end

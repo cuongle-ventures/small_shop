@@ -1,21 +1,24 @@
 class OrdersController < ApplicationController
-  skip_before_action :verify_authenticity_token, only: [:place_order]
+  skip_before_action :verify_authenticity_token, only: [:place_order, :destroy]
+
   before_action :authenticate_request
+  before_action :order_service
 
   include Params
 
   def index
-    @customer = Customer.find_by(email: Current.customer["email"])
-    @order_service = customer_service
-
     render json: { orders: @order_service.listing(paginate_params) }
   rescue ::PaginateError => e
     render json: { errors: [e.message] }
   end
 
-  def show
-    @order_service = customer_service
+  def destroy
+    order_service.destroy(params[:id])
+  rescue StandardError => e
+    render json: { errors: [e.message] }
+  end
 
+  def show
     @order = @order_service.show(params[:id])
 
     unless @order.present?
@@ -23,7 +26,6 @@ class OrdersController < ApplicationController
     end
 
     @order_arr = []
-
     @order.order_items.each do |ot|
       @order_arr << {
         product: ot.product.name,
@@ -43,8 +45,6 @@ class OrdersController < ApplicationController
   end
 
   def place_order
-    @customer = Customer.find_by(email: Current.customer["email"])
-    @order_service = customer_service
     @order = @order_service.place_order(params[:products])
     render json: { data: @order }
   rescue ::PlaceOrderError => e
@@ -53,8 +53,7 @@ class OrdersController < ApplicationController
 
   private
 
-  def customer_service
-    customer = Customer.find_by(email: Current.customer["email"])
-    OrderService.new(customer)
+  def order_service
+    @order_service = OrderService.new(Current.customer)
   end
 end

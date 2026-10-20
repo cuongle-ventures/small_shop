@@ -15,6 +15,16 @@ class OrderService
     order
   end
 
+  def destroy(id)
+    order = show(id)
+
+    unless order.present?
+      raise StandardError.new("order not found")
+    end
+
+    order.destroy
+  end
+
   def place_order(products)
     unless @customer.present?
       raise PlaceOrderError.new("customer not found")

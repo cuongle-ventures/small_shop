@@ -2,8 +2,10 @@ class CustomersController < ApplicationController
   skip_before_action :verify_authenticity_token, only: [:create, :update, :destroy]
   before_action :authenticate_request
 
+  include Params
+
   def index
-    @customers = Customer.paginate(query_params)
+    @customers = customer_service.listing(paginate_params)
 
     render json: { customers: @customers }, status: :ok
   rescue ::PaginateError => e
@@ -11,7 +13,7 @@ class CustomersController < ApplicationController
   end
 
   def show
-    @customer = Customer.find_by(id: params[:id])
+    @customer = customer_service.show(params[:id])
 
     unless @customer.present?
       return render json: { errors: ['customer not found'] }, status: :not_found
@@ -72,13 +74,9 @@ class CustomersController < ApplicationController
     params.require(:customer).permit(:first_name, :last_name, :email)
   end
 
-  def query_params
-    params.permit(:page, :per_page, :sort_column, :direction, :query)
-  end
-
   private
 
   def customer_service
-    
+    CustomerService.new(Current.customer)
   end
 end

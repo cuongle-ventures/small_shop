@@ -3,4 +3,8 @@ class Customer < ApplicationRecord
   include Paginate
 
   has_many :orders
+
+  def display_name
+    "#{first_name} #{last_name}"
+  end
 end
